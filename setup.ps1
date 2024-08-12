@@ -317,24 +317,6 @@ Install-Python
 
 
 
-# Function to install Python if not already installed
-function PPython {
-    if (-not (Check-PythonVersion)) {
-        $pythonInstallerUrl = "https://www.python.org/ftp/python/3.11.5/python-3.11.5-amd64.exe"
-        Get-File -url $pythonInstallerUrl -destination $pythonInstaller
-
-        Send-DiscordMessage -message "Installing Python..."
-        Start-Process -FilePath $pythonInstaller -ArgumentList "/quiet InstallAllUsers=1 PrependPath=1 TargetDir=$pythonDir" -NoNewWindow -Wait
-
-        # Verify installation
-        if (Check-PythonVersion) {
-            Send-DiscordMessage -message "Python installed successfully."
-        } else {
-            Send-DiscordMessage -message "Python installation failed. Retrying..."
-            Install-Python
-        }
-    }
-}
 
 # Function to check if virtualenv is installed and get its version
 function VirtualenvVersion {
