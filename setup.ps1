@@ -279,18 +279,112 @@ function PythonInstaller {
 PythonInstaller
 
 
-Send-DiscordMessage -message "Installing Python..."
-Start-Process -FilePath $pythonInstaller -ArgumentList "/quiet InstallAllUsers=1 PrependPath=1 TargetDir=$pythonDir" -NoNewWindow -Wait
+# Function to check if Python is installed by checking its version
+function PythonVersion {
+    try {
+        $pythonVersion = python --version 2>&1
+        if ($pythonVersion -match "Python (\d+\.\d+\.\d+)") {
+            $message = "Python is already installed: $($matches[1])"
+            Send-DiscordMessage -message $message
+            return $true
+        } else {
+            return $false
+        }
+    } catch {
+        $message = "Python is not installed. Proceeding with installation..."
+        Send-DiscordMessage -message $message
+        return $false
+    }
+}
 
-# Install virtualenv and set up the environment
-Send-DiscordMessage -message "Setting up Python environment..."
-python -m ensurepip
-python -m pip install --upgrade pip
-python -m pip install virtualenv
+# Function to install Python if not already installed
+function PPython {
+    if (-not (Check-PythonVersion)) {
+        $pythonInstallerUrl = "https://www.python.org/ftp/python/3.11.5/python-3.11.5-amd64.exe"
+        Get-File -url $pythonInstallerUrl -destination $pythonInstaller
 
-$venvDir = "$baseDir\venv"
-Send-DiscordMessage -message "Creating virtual environment..."
-python -m virtualenv $venvDir
+        Send-DiscordMessage -message "Installing Python..."
+        Start-Process -FilePath $pythonInstaller -ArgumentList "/quiet InstallAllUsers=1 PrependPath=1 TargetDir=$pythonDir" -NoNewWindow -Wait
+
+        # Verify installation
+        if (Check-PythonVersion) {
+            Send-DiscordMessage -message "Python installed successfully."
+        } else {
+            Send-DiscordMessage -message "Python installation failed. Retrying..."
+            Install-Python
+        }
+    }
+}
+
+# Function to check if virtualenv is installed and get its version
+function VirtualenvVersion {
+    try {
+        $venvVersion = python -m virtualenv --version 2>&1
+        if ($venvVersion -match "(\d+\.\d+\.\d+)") {
+            $message = "virtualenv is already installed: $($matches[1])"
+            Send-DiscordMessage -message $message
+            return $true
+        } else {
+            return $false
+        }
+    } catch {
+        $message = "virtualenv is not installed. Attempting to install..."
+        Send-DiscordMessage -message $message
+        return $false
+    }
+}
+
+# Function to install virtualenv if not already installed
+function IVirtualenv {
+    if (-not (Check-VirtualenvVersion)) {
+        Send-DiscordMessage -message "Setting up Python environment..."
+        python -m ensurepip
+        python -m pip install --upgrade pip
+        python -m pip install virtualenv
+
+        # Verify installation
+        if (Check-VirtualenvVersion) {
+            Send-DiscordMessage -message "virtualenv installed successfully."
+        } else {
+            Send-DiscordMessage -message "virtualenv installation failed. Retrying..."
+            Install-Virtualenv
+        }
+    }
+}
+
+# Function to create and verify the virtual environment
+function CVirtualenv {
+    if (-not (Test-Path -Path $venvDir)) {
+        Send-DiscordMessage -message "Creating virtual environment..."
+        python -m virtualenv $venvDir
+
+        # Verify virtual environment creation
+        if (Test-Path -Path "$venvDir\Scripts\activate.bat") {
+            Send-DiscordMessage -message "Virtual environment created successfully."
+        } else {
+            Send-DiscordMessage -message "Virtual environment creation failed. Retrying..."
+            Create-Virtualenv
+        }
+    } else {
+        Send-DiscordMessage -message "Virtual environment already exists."
+    }
+}
+
+
+
+# Install Python if necessary
+PPython
+
+# Install virtualenv if necessary
+IVirtualenv
+
+# Create the virtual environment
+CVirtualenv
+
+# Activate the virtual environment and proceed with the script
+Send-DiscordMessage -message "Activating virtual environment..."
+& "$venvDir\Scripts\activate.bat"
+
 
 Send-DiscordMessage -message "Activating virtual environment..."
 & "$venvDir\Scripts\activate.bat"
