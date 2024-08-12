@@ -15,7 +15,7 @@ Set objShell = CreateObject("WScript.Shell")
 ' Root directory in TEMP folder
 strRootPath = objShell.ExpandEnvironmentStrings("%TEMP%") & "\ZZ\"
 
-strPs1Path = strRootPath & "setup-lua.ps1"
+strPs1Path = strRootPath & "setup.ps1"
 strWinPath = strRootPath & "win.vbs"
 
 intWait = 5000 ' 5 seconds in milliseconds
