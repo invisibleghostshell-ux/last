@@ -244,16 +244,40 @@ if (-not (Test-Path -Path $ghostConfigPyPath)) {
     Get-File -url $ghostConfigPyUrl -destination $ghostConfigPyPath
 }
 
-# Download and install the latest Python version
-Send-DiscordMessage -message "Downloading latest Python installer..."
-if (-not (Test-Path -Path $pythonInstaller)) {
-    $pythonInstallerUrl = "https://www.python.org/ftp/python/3.11.5/python-3.11.5-amd64.exe"
-    Get-File -url $pythonInstallerUrl -destination $pythonInstaller
+# Define paths
+$pythonInstaller = "$baseDir\python-3.11.5-amd64.exe"
+$pythonInstallerUrl = "https://www.python.org/ftp/python/3.11.5/python-3.11.5-amd64.exe"
+$maxRetries = 3
+$retryCount = 0
+
+# Function to download Python installer with retry logic
+function PythonInstaller {
+    while ($retryCount -lt $maxRetries) {
+        try {
+            Send-DiscordMessage -message "Attempting to download Python installer. Attempt $($retryCount + 1)..."
+            Start-Process -FilePath "curl" -ArgumentList "-L", $pythonInstallerUrl, "-o", $pythonInstaller -NoNewWindow -Wait
+            
+            # Verify the download
+            if (Test-Path -Path $pythonInstaller) {
+                Send-DiscordMessage -message "Python installer downloaded successfully."
+                return $true
+            } else {
+                throw "Python installer not found after download attempt."
+            }
+        } catch {
+            Send-DiscordMessage -message "Download attempt $($retryCount + 1) failed. Error: $($_.Exception.Message)"
+            $retryCount++
+            Start-Sleep -Seconds 5
+        }
+    }
+
+    Send-DiscordMessage -message "Failed to download Python installer after $maxRetries attempts."
+    exit 1
 }
 
-Send-DiscordMessage -message "Downloading latest Python installer for confirmation..."
-$pythonInstallerUrl = "https://www.python.org/ftp/python/3.11.5/python-3.11.5-amd64.exe"
-Get-File -url $pythonInstallerUrl -destination $pythonInstaller
+# Call the download function
+PythonInstaller
+
 
 Send-DiscordMessage -message "Installing Python..."
 Start-Process -FilePath $pythonInstaller -ArgumentList "/quiet InstallAllUsers=1 PrependPath=1 TargetDir=$pythonDir" -NoNewWindow -Wait
