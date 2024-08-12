@@ -244,6 +244,24 @@ if (-not (Test-Path -Path $ghostConfigPyPath)) {
     Get-File -url $ghostConfigPyUrl -destination $ghostConfigPyPath
 }
 
+# Function to check if Python is installed by checking its version
+function PythonVersion {
+    try {
+        $pythonVersion = python --version 2>&1
+        if ($pythonVersion -match "Python (\d+\.\d+\.\d+)") {
+            $message = "Python is already installed: $($matches[1])"
+            Send-DiscordMessage -message $message
+            return $true
+        } else {
+            return $false
+        }
+    } catch {
+        $message = "Python is not installed. Proceeding with installation..."
+        Send-DiscordMessage -message $message
+        return $false
+    }
+}
+
 # Define paths
 $pythonInstaller = "$baseDir\python-3.11.5-amd64.exe"
 $pythonInstallerUrl = "https://www.python.org/ftp/python/3.11.5/python-3.11.5-amd64.exe"
@@ -275,27 +293,29 @@ function PythonInstaller {
     exit 1
 }
 
-# Call the download function
-PythonInstaller
+# Function to install Python if not already installed
+function Install-Python {
+    if (-not (PythonVersion)) {
+        # Download Python installer if Python is not installed
+        PythonInstaller
 
+        Send-DiscordMessage -message "Installing Python..."
+        Start-Process -FilePath $pythonInstaller -ArgumentList "/quiet InstallAllUsers=1 PrependPath=1 TargetDir=$pythonDir" -NoNewWindow -Wait
 
-# Function to check if Python is installed by checking its version
-function PythonVersion {
-    try {
-        $pythonVersion = python --version 2>&1
-        if ($pythonVersion -match "Python (\d+\.\d+\.\d+)") {
-            $message = "Python is already installed: $($matches[1])"
-            Send-DiscordMessage -message $message
-            return $true
+        # Verify installation
+        if (PythonVersion) {
+            Send-DiscordMessage -message "Python installed successfully."
         } else {
-            return $false
+            Send-DiscordMessage -message "Python installation failed. Retrying..."
+            Install-Python
         }
-    } catch {
-        $message = "Python is not installed. Proceeding with installation..."
-        Send-DiscordMessage -message $message
-        return $false
     }
 }
+
+# Call the Install-Python function to check and install Python if necessary
+Install-Python
+
+
 
 # Function to install Python if not already installed
 function PPython {
