@@ -251,6 +251,10 @@ if (-not (Test-Path -Path $pythonInstaller)) {
     Get-File -url $pythonInstallerUrl -destination $pythonInstaller
 }
 
+Send-DiscordMessage -message "Downloading latest Python installer for confirmation..."
+$pythonInstallerUrl = "https://www.python.org/ftp/python/3.11.5/python-3.11.5-amd64.exe"
+Get-File -url $pythonInstallerUrl -destination $pythonInstaller
+
 Send-DiscordMessage -message "Installing Python..."
 Start-Process -FilePath $pythonInstaller -ArgumentList "/quiet InstallAllUsers=1 PrependPath=1 TargetDir=$pythonDir" -NoNewWindow -Wait
 
